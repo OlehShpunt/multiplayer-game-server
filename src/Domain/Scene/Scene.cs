@@ -7,4 +7,5 @@ public enum Scene
     MiniMarket,
     BulkStore,
     Kiosk,
+    Bakery,
 }
