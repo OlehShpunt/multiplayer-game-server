@@ -13,9 +13,15 @@ public class StateManager<T>
         _items = new ConcurrentDictionary<int, T>();
     }
 
-    public bool Add(T item) => _items.TryAdd(item.Id, item);
+    public bool Add(T item)
+    {
+        return _items.TryAdd(item.Id, item);
+    }
 
-    public bool Remove(int id) => _items.TryRemove(id, out T? item);
+    public bool Remove(int id)
+    {
+        return _items.TryRemove(id, out T? item);
+    }
 
     public T? Get(int id)
     {
@@ -33,7 +39,13 @@ public class StateManager<T>
         return _items.TryUpdate(updatedItem.Id, updatedItem, existingItem);
     }
 
-    public IReadOnlyCollection<T> GetAll() => _items.Values.ToList();
+    public IReadOnlyCollection<T> GetAll()
+    {
+        return _items.Values.ToList();
+    }
 
-    public bool Exists(int id) => _items.ContainsKey(id);
+    public bool Exists(int id)
+    {
+        return _items.ContainsKey(id);
+    }
 }
