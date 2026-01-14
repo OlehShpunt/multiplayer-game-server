@@ -1,6 +1,6 @@
 namespace Domain;
 
-public class Player : Character
+public class Player : Character, IStateTrackable
 {
     public string Name { get; set; }
     public int Balance { set; get; }

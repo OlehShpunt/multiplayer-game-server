@@ -1,6 +1,6 @@
 namespace Domain;
 
-public class Character
+public class Character : IStateTrackable
 {
     public int Id { get; set; }
     public LocationComponent Location { get; set; }
