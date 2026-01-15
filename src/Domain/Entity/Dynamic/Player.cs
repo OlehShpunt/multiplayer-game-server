@@ -3,7 +3,7 @@ namespace Domain;
 public class Player : Character, IStateTrackable
 {
     public string Name { get; set; }
-    public int Balance { set; get; }
+    public int Balance { get; set; }
     private const int DEFAULT_BALANCE = 15;
 
     public Player(
