@@ -3,7 +3,7 @@ namespace Application;
 using System.Collections.Concurrent;
 using Domain;
 
-public class StateManager<T>
+public class StateManager<T> : IStateManager<T>
     where T : IStateTrackable
 {
     private readonly ConcurrentDictionary<int, T> _items;

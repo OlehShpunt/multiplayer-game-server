@@ -2,13 +2,13 @@ namespace Application;
 
 using Domain;
 
-public class GameStateManager
+public class GameStateManager : IGameStateManager
 {
-    public StateManager<Player> Players { get; init; }
-    public StateManager<Seller> Sellers { get; init; }
-    public StateManager<Customer> Customers { get; init; }
-    public StateManager<Location> Locations { get; init; }
-    public StateManager<Bakery> Bakeries { get; init; }
+    public IStateManager<Player> Players { get; init; }
+    public IStateManager<Seller> Sellers { get; init; }
+    public IStateManager<Customer> Customers { get; init; }
+    public IStateManager<Location> Locations { get; init; }
+    public IStateManager<Bakery> Bakeries { get; init; }
 
     public GameStateManager()
     {
