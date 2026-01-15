@@ -2,7 +2,7 @@ namespace Domain;
 
 public class Item
 {
-    public int Id { set; get; }
+    public int Id { set; init; }
     public string Name { set; get; }
     public int Price { set; get; }
     public int PurchasePrice { set; get; }

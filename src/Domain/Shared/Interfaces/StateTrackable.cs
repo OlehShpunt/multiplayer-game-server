@@ -2,5 +2,5 @@ namespace Domain;
 
 public interface IStateTrackable
 {
-    int Id { get; set; }
+    int Id { get; init; }
 }
