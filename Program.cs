@@ -1,6 +1,11 @@
 var builder = WebApplication.CreateBuilder(args);
-var app = builder.Build();
 
-app.MapGet("/", () => "Hello World!");
+builder.Services.AddSingleton<Application.IGameStateManager, Application.GameStateManager>();
+builder.Services.AddSingleton(
+    typeof(Application.IStateManager<>),
+    typeof(Application.StateManager<>)
+);
+
+var app = builder.Build();
 
 app.Run();
