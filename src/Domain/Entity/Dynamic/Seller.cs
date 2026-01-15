@@ -14,14 +14,4 @@ public class Seller : Character
     {
         this.Name = name;
     }
-
-    public string GetName()
-    {
-        return Name;
-    }
-
-    public void SetName(string name)
-    {
-        Name = name;
-    }
 }

@@ -4,8 +4,8 @@ public class Bakery : Location
 {
     public string Name { get; set; }
 
-    public Bakery(int id, string name, List<Storage> storages, Scene scene)
-        : base(id, storages, scene)
+    public Bakery(string name, List<Storage> storages, Scene scene)
+        : base(storages, scene)
     {
         Name = name;
     }

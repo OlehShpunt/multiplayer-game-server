@@ -12,24 +12,4 @@ public class Character : IStateTrackable
         Location = location;
         Inventory = inventory;
     }
-
-    public LocationComponent GetLocation()
-    {
-        return Location;
-    }
-
-    public InventoryComponent GetInventory()
-    {
-        return Inventory;
-    }
-
-    public void SetLocation(LocationComponent location)
-    {
-        Location = location;
-    }
-
-    public void SetInventory(InventoryComponent inventory)
-    {
-        Inventory = inventory;
-    }
 }

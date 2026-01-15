@@ -2,10 +2,10 @@ namespace Domain;
 
 public class Item
 {
-    public int Id { set; init; }
-    public string Name { set; get; }
-    public int Price { set; get; }
-    public int PurchasePrice { set; get; }
+    public int Id { get; init; }
+    public string Name { get; set; }
+    public int Price { get; set; }
+    public int PurchasePrice { get; set; }
 
     public Item(int id = -1, int price = -1, int purchasePrice = -1, string name = "not specified")
     {
@@ -13,25 +13,5 @@ public class Item
         Name = name;
         Id = id;
         PurchasePrice = purchasePrice;
-    }
-
-    public int GetPrice()
-    {
-        return Price;
-    }
-
-    public string GetName()
-    {
-        return Name;
-    }
-
-    public void SetPrice(int price)
-    {
-        Price = price;
-    }
-
-    public void SetName(string name)
-    {
-        Name = name;
     }
 }

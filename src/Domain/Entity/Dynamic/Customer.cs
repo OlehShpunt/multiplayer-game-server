@@ -14,14 +14,4 @@ public class Customer : Character
     {
         this.Name = name;
     }
-
-    public string GetName()
-    {
-        return Name;
-    }
-
-    public void SetName(string name)
-    {
-        Name = name;
-    }
 }

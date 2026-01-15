@@ -18,24 +18,4 @@ public class Player : Character, IStateTrackable
         this.Balance = balance;
         this.Name = name;
     }
-
-    public string GetName()
-    {
-        return Name;
-    }
-
-    public int GetBalance()
-    {
-        return Balance;
-    }
-
-    public void SetName(string name)
-    {
-        Name = name;
-    }
-
-    public void SetBalance(int balance)
-    {
-        Balance = balance;
-    }
 }
