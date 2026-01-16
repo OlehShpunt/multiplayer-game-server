@@ -8,7 +8,7 @@ public class MovePlayerUseCase : UseCase
     public MovePlayerUseCase(IGameStateManager gameStateManager)
         : base(gameStateManager) { }
 
-    public bool Execute(int playerId, Vector2 newPosition)
+    public bool Execute(string playerId, Vector2 newPosition)
     {
         var player = GameStateManager.Players.Get(playerId);
 

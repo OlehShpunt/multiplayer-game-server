@@ -8,7 +8,7 @@ public class TeleportPlayerUseCase : UseCase
     public TeleportPlayerUseCase(IGameStateManager gameStateManager)
         : base(gameStateManager) { }
 
-    public bool Execute(int playerId, Scene toScene)
+    public bool Execute(string playerId, Scene toScene)
     {
         var player = GameStateManager.Players.Get(playerId);
 
