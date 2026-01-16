@@ -2,7 +2,7 @@ namespace API;
 
 public struct WebSocketClientMessageDto
 {
-    public ActionType Action { get; set; }
+    public ActionType? Action { get; set; }
     public string? Data { get; set; } // NOTE: Can be null, because some actions may not require additional data
 
     public override string ToString()
@@ -12,7 +12,7 @@ public struct WebSocketClientMessageDto
 
     public readonly bool IsValid()
     {
-        return true;
+        return Action != null && !string.IsNullOrEmpty(Action.ToString());
     }
 
     public enum ActionType

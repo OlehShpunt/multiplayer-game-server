@@ -26,7 +26,7 @@ public class WebSocketService
             _connectedClients[clientId] = webSocket;
 
             Console.WriteLine(
-                $"[SERVER] Client connected: {context.Connection.RemoteIpAddress}:{context.Connection.RemotePort}"
+                $"[INFO] Client connected: {context.Connection.RemoteIpAddress}:{context.Connection.RemotePort}"
             );
 
             // Ensures resources are cleaned up in case an error occurs in the listening loop
@@ -42,7 +42,7 @@ public class WebSocketService
             {
                 _connectedClients.TryRemove(clientId, out _);
                 Console.WriteLine(
-                    $"[SERVER] Client disconnected: {context.Connection.RemoteIpAddress}:{context.Connection.RemotePort}"
+                    $"[INFO] Client disconnected: {context.Connection.RemoteIpAddress}:{context.Connection.RemotePort}"
                 );
             }
         }
@@ -81,6 +81,10 @@ public class WebSocketService
                     );
                     continue;
                 }
+
+                Console.WriteLine(
+                    "[DEBUG] Deserialized WebSocketRequestDto: " + receivedDto.ToString()
+                );
 
                 if (!receivedDto.IsValid())
                 {
