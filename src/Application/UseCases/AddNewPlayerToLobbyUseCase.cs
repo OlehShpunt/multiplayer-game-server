@@ -16,7 +16,7 @@ public class AddNewPlayerToLobbyUseCase : UseCase
     {
         return GameStateManager.Players.Add( // Returns false if player with the same ID already exists
             new Player(
-                id: parameters.Id,
+                id: parameters.PlayerId,
                 location: new LocationComponent(new Vector2(0, 0), Scene.Town),
                 inventory: new InventoryComponent(new List<Item>()),
                 name: parameters.Name
@@ -26,12 +26,12 @@ public class AddNewPlayerToLobbyUseCase : UseCase
 
     public struct Params
     {
-        public string Id { get; set; } = string.Empty;
+        public string PlayerId { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
 
-        public Params(string id, string name)
+        public Params(string playerId, string name)
         {
-            Id = id;
+            PlayerId = playerId;
             Name = name;
         }
     }
