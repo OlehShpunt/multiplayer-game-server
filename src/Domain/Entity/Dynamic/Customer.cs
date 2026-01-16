@@ -5,7 +5,7 @@ public class Customer : Character
     public string Name { get; set; }
 
     public Customer(
-        int id,
+        string id,
         LocationComponent location,
         InventoryComponent inventory,
         string name = ""

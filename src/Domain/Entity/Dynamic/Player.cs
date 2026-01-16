@@ -7,11 +7,11 @@ public class Player : Character, IStateTrackable
     private const int DEFAULT_BALANCE = 15;
 
     public Player(
-        int id,
+        string id,
         LocationComponent location,
         InventoryComponent inventory,
-        int balance = DEFAULT_BALANCE,
-        string name = ""
+        string name,
+        int balance = DEFAULT_BALANCE
     )
         : base(location, inventory, id)
     {

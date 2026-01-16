@@ -2,13 +2,13 @@ namespace Domain;
 
 public class Location : IStateTrackable
 {
-    public int Id { get; init; }
+    public string Id { get; init; }
     public List<Storage> Storages { get; init; }
     public Scene Scene { get; init; }
 
     public Location(List<Storage> storages, Scene scene)
     {
-        Id = (int)scene;
+        Id = scene.ToString();
         Storages = storages;
         Scene = scene;
     }

@@ -6,11 +6,11 @@ using Domain;
 public class StateManager<T> : IStateManager<T>
     where T : IStateTrackable
 {
-    private readonly ConcurrentDictionary<int, T> _items;
+    private readonly ConcurrentDictionary<string, T> _items;
 
     public StateManager()
     {
-        _items = new ConcurrentDictionary<int, T>();
+        _items = new ConcurrentDictionary<string, T>();
     }
 
     public bool Add(T item)
@@ -18,12 +18,12 @@ public class StateManager<T> : IStateManager<T>
         return _items.TryAdd(item.Id, item);
     }
 
-    public bool Remove(int id)
+    public bool Remove(string id)
     {
         return _items.TryRemove(id, out T? item);
     }
 
-    public T? Get(int id)
+    public T? Get(string id)
     {
         _items.TryGetValue(id, out T? item);
         return item;
@@ -44,7 +44,7 @@ public class StateManager<T> : IStateManager<T>
         return _items.Values.ToList();
     }
 
-    public bool Exists(int id)
+    public bool Exists(string id)
     {
         return _items.ContainsKey(id);
     }
