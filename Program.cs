@@ -1,3 +1,5 @@
+using API;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<Application.IGameStateManager, Application.GameStateManager>();
@@ -7,5 +9,13 @@ builder.Services.AddSingleton(
 );
 
 var app = builder.Build();
+
+app.UseWebSockets();
+WebSocketService webSocketService = new WebSocketService();
+app.Map("/ws", webSocketService.HandleAsync);
+app.Lifetime.ApplicationStopping.Register(() =>
+{
+    webSocketService.DisconnectAllClients();
+});
 
 app.Run();
