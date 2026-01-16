@@ -9,7 +9,7 @@ public static class ClientMessageHandler
 {
     public static async Task HandleNewMessage(
         string clientId,
-        WebSocketDto dto,
+        WebSocketClientMessageDto dto,
         ConcurrentDictionary<string, WebSocket> connectedClients,
         GameStateManager gameStateManager
     )

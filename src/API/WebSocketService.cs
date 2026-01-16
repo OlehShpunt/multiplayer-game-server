@@ -68,10 +68,10 @@ public class WebSocketService
                 string json = Encoding.UTF8.GetString(buffer, 0, result.Count);
                 Console.WriteLine("[DEBUG] New message: " + json);
 
-                WebSocketDto receivedDto;
+                WebSocketClientMessageDto receivedDto;
                 try
                 {
-                    receivedDto = JsonSerializer.Deserialize<WebSocketDto>(json);
+                    receivedDto = JsonSerializer.Deserialize<WebSocketClientMessageDto>(json);
                 }
                 catch (Exception e)
                 {
@@ -121,14 +121,14 @@ public class WebSocketService
 
     internal class Broadcaster
     {
-        public static async Task BroadcastMessageToAllAsync(WebSocketDto message)
+        public static async Task BroadcastMessageToAllAsync(WebSocketServerMessageDto message)
         {
             await SendMessageAsync(_connectedClients.Values, message);
         }
 
         public static async Task BroadcastMessageToSpecificAsync(
             IEnumerable<string> ids,
-            WebSocketDto message
+            WebSocketServerMessageDto message
         )
         {
             IEnumerable<WebSocket> clients = ids.Where(id =>
@@ -140,7 +140,10 @@ public class WebSocketService
             await SendMessageAsync(clients, message);
         }
 
-        public static async Task BroadcastMessageExceptAsync(string id, WebSocketDto message)
+        public static async Task BroadcastMessageExceptAsync(
+            string id,
+            WebSocketServerMessageDto message
+        )
         {
             IEnumerable<WebSocket> clients = _connectedClients
                 .Where(client => client.Key != id && client.Value.State == WebSocketState.Open)
@@ -151,7 +154,7 @@ public class WebSocketService
 
         private static async Task SendMessageAsync(
             IEnumerable<WebSocket> clients,
-            WebSocketDto message
+            WebSocketServerMessageDto message
         )
         {
             string serializedMessage = JsonSerializer.Serialize(message);
