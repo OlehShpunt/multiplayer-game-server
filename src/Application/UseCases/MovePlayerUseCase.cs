@@ -8,9 +8,9 @@ public class MovePlayerUseCase : UseCase
     public MovePlayerUseCase(IGameStateManager gameStateManager)
         : base(gameStateManager) { }
 
-    public bool Execute(string playerId, Vector2 newPosition)
+    public bool Execute(Params parameters)
     {
-        var player = GameStateManager.Players.Get(playerId);
+        var player = GameStateManager.Players.Get(parameters.PlayerId);
 
         if (player == null)
         {
@@ -21,23 +21,35 @@ public class MovePlayerUseCase : UseCase
         if (
             !PlayerPositionValidator.IsValid(
                 player.Location.Position,
-                newPosition,
+                parameters.NewPosition,
                 player.Location.Scene
             )
         )
         {
             Console.WriteLine(
-                $"Movement to position {newPosition} in scene {SceneConverter.SceneToString(player.Location.Scene)} is not allowed."
+                $"Movement to position {parameters.NewPosition} in scene {SceneConverter.SceneToString(player.Location.Scene)} is not allowed."
             );
             return false;
         }
 
-        player.Location.Position = newPosition;
+        player.Location.Position = parameters.NewPosition;
 
         Console.WriteLine(
-            $"Player {playerId} moved to position {player.Location.Position} in scene {SceneConverter.SceneToString(player.Location.Scene)}."
+            $"Player {parameters.PlayerId} moved to position {player.Location.Position} in scene {SceneConverter.SceneToString(player.Location.Scene)}."
         );
 
         return true;
+    }
+
+    public struct Params
+    {
+        public string PlayerId { get; set; }
+        public Vector2 NewPosition { get; set; }
+
+        public Params(string playerId, Vector2 newPosition)
+        {
+            PlayerId = playerId;
+            NewPosition = newPosition;
+        }
     }
 }

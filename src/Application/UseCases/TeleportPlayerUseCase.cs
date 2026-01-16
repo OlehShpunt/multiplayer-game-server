@@ -8,13 +8,13 @@ public class TeleportPlayerUseCase : UseCase
     public TeleportPlayerUseCase(IGameStateManager gameStateManager)
         : base(gameStateManager) { }
 
-    public bool Execute(string playerId, Scene toScene)
+    public bool Execute(Params parameters)
     {
-        var player = GameStateManager.Players.Get(playerId);
+        var player = GameStateManager.Players.Get(parameters.PlayerId);
 
         if (player == null)
         {
-            Console.WriteLine($"Player with ID {playerId} not found.");
+            Console.WriteLine($"Player with ID {parameters.PlayerId} not found.");
             return false;
         }
 
@@ -26,20 +26,37 @@ public class TeleportPlayerUseCase : UseCase
         if (!TeleportPositionValidator.IsValid(fromPosition, fromScene))
         {
             Console.WriteLine(
-                $"Teleportation from position {fromPosition} to scene {toScene} is not allowed."
+                $"Teleportation from position {fromPosition} to scene {parameters.ToScene} is not allowed."
             );
             return false;
         }
 
-        player.Location.Position = TeleportPositionResolver.Resolve(player.Location.Scene, toScene);
-        player.Location.Scene = toScene;
+        player.Location.Position = TeleportPositionResolver.Resolve(
+            player.Location.Scene,
+            parameters.ToScene
+        );
+        player.Location.Scene = parameters.ToScene;
 
         Console.WriteLine(
-            $"Player {playerId} teleported from scene "
+            $"Player {parameters.PlayerId} teleported from scene "
                 + $"{SceneConverter.SceneToString(fromScene)} to scene {SceneConverter.SceneToString(player.Location.Scene)} "
                 + $"with previous position {fromPosition} and new position {player.Location.Position}."
         );
 
         return true;
+    }
+
+    public struct Params
+    {
+        public string PlayerId { get; set; }
+        public Vector2 NewPosition { get; set; }
+        public Scene ToScene { get; set; }
+
+        public Params(string playerId, Vector2 newPosition, Scene toScene)
+        {
+            PlayerId = playerId;
+            NewPosition = newPosition;
+            ToScene = toScene;
+        }
     }
 }

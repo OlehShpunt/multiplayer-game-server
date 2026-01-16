@@ -1,6 +1,6 @@
 namespace Application;
 
-public class UseCase
+public abstract class UseCase
 {
     public IGameStateManager GameStateManager { get; init; }
 
