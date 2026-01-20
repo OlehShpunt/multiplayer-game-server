@@ -17,6 +17,6 @@ WORKDIR /app
 # Copy the built application from the build environment
 COPY --from=build-environment /app/out .
 
-EXPOSE 5000
+EXPOSE 8080
 
 CMD [ "dotnet", "game-server.dll" ]
