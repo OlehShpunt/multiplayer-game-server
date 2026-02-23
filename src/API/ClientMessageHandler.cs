@@ -3,6 +3,7 @@ using System.Net.WebSockets;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+using API;
 using Application;
 
 namespace API;
@@ -25,15 +26,17 @@ public static class ClientMessageHandler
         int action = reader.ReadInt16();
 
         Console.WriteLine(
-            "[DEBUG] ClientMessageHandler received binary message with action code: "
-                + action
-                + " from client "
-                + clientId
+            $"[DEBUG] Binary message received | clientId={clientId} | actionCode={action} | bufferLength={buffer?.Length ?? 0}"
         );
 
         if (action == (int)UseCaseActionCodes.AddNewPlayerToLobby)
         {
             string playerName = reader.ReadString();
+
+            Console.WriteLine(
+                $"[DEBUG] Action=AddNewPlayerToLobby | playerId={clientId} | playerName=\"{playerName}\""
+            );
+
             var addParams = new AddNewPlayerToLobbyUseCase.Params
             {
                 PlayerId = clientId,
@@ -41,6 +44,10 @@ public static class ClientMessageHandler
             };
 
             bool success = new AddNewPlayerToLobbyUseCase(gameStateManager).Execute(addParams);
+
+            Console.WriteLine(
+                $"[DEBUG] Action=AddNewPlayerToLobby | success={success} | playerId={clientId} | playerName=\"{playerName}\""
+            );
 
             if (success)
             {
@@ -66,8 +73,15 @@ public static class ClientMessageHandler
         }
         else if (action == (int)UseCaseActionCodes.RemovePlayerFromLobby)
         {
+            Console.WriteLine($"[DEBUG] Action=RemovePlayerFromLobby | playerId={clientId}");
+
             var removeParams = new RemovePlayerFromLobbyUseCase.Params { PlayerId = clientId };
             bool success = new RemovePlayerFromLobbyUseCase(gameStateManager).Execute(removeParams);
+
+            Console.WriteLine(
+                $"[DEBUG] Action=RemovePlayerFromLobby | success={success} | playerId={clientId}"
+            );
+
             if (success)
             {
                 await BinaryMessageBroadcaster.BroadcastMessageToAllExceptAsync(
@@ -96,6 +110,10 @@ public static class ClientMessageHandler
             float y = reader.ReadSingle();
             int sceneId = reader.ReadInt16();
 
+            Console.WriteLine(
+                $"[DEBUG] Action=TeleportPlayer | playerId={clientId} | x={x} | y={y} | sceneId={sceneId} | toScene={(Domain.Scene)sceneId}"
+            );
+
             var teleportParams = new TeleportPlayerUseCase.Params
             {
                 PlayerId = clientId,
@@ -104,6 +122,10 @@ public static class ClientMessageHandler
             };
 
             bool success = new TeleportPlayerUseCase(gameStateManager).Execute(teleportParams);
+
+            Console.WriteLine(
+                $"[DEBUG] Action=TeleportPlayer | success={success} | playerId={clientId} | x={x} | y={y} | sceneId={sceneId}"
+            );
 
             if (success)
             {
@@ -131,6 +153,8 @@ public static class ClientMessageHandler
             float x = reader.ReadSingle();
             float y = reader.ReadSingle();
 
+            Console.WriteLine($"[DEBUG] Action=MovePlayer | playerId={clientId} | x={x} | y={y}");
+
             var moveParams = new MovePlayerUseCase.Params
             {
                 PlayerId = clientId,
@@ -138,6 +162,33 @@ public static class ClientMessageHandler
             };
 
             bool success = new MovePlayerUseCase(gameStateManager).Execute(moveParams);
+
+            Console.WriteLine(
+                $"[DEBUG] Action=MovePlayer | success={success} | playerId={clientId}"
+            );
+
+            if (success)
+            {
+                await BinaryMessageBroadcaster.BroadcastMessageToAllExceptAsync(
+                    [clientId],
+                    BinaryMessageBuilder.CreatePlayerMovedMessage(clientId, x, y),
+                    connectedClients
+                );
+            }
+            else
+            {
+                await BinaryMessageBroadcaster.BroadcastMessageToSpecificAsync(
+                    [clientId],
+                    BinaryMessageBuilder.CreateErrorMessage("Failed to move player"),
+                    connectedClients
+                );
+            }
+        }
+        else
+        {
+            Console.WriteLine(
+                $"[WARN] Unknown action code | clientId={clientId} | actionCode={action}"
+            );
         }
     }
 }
