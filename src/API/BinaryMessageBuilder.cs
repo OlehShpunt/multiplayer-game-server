@@ -1,3 +1,5 @@
+using System.Text;
+using API;
 using Domain;
 
 namespace API;
@@ -10,7 +12,7 @@ public static class BinaryMessageBuilder
         using var writer = new BinaryWriter(memoryStream);
 
         writer.Write((short)BroadcastActionCodes.PlayerJoinedLobby);
-        writer.Write(playerId);
+        BinaryString36.Write(writer, playerId);
         writer.Write(playerName);
 
         return memoryStream.ToArray();
@@ -22,7 +24,7 @@ public static class BinaryMessageBuilder
         using var writer = new BinaryWriter(memoryStream);
 
         writer.Write((short)BroadcastActionCodes.PlayerLeftLobby);
-        writer.Write(playerId);
+        BinaryString36.Write(writer, playerId);
 
         return memoryStream.ToArray();
     }
@@ -33,7 +35,7 @@ public static class BinaryMessageBuilder
         using var writer = new BinaryWriter(memoryStream);
 
         writer.Write((short)BroadcastActionCodes.PlayerMoved);
-        writer.Write(playerId);
+        BinaryString36.Write(writer, playerId);
         writer.Write(newX);
         writer.Write(newY);
 
@@ -51,7 +53,7 @@ public static class BinaryMessageBuilder
         using var writer = new BinaryWriter(memoryStream);
 
         writer.Write((short)BroadcastActionCodes.PlayerTeleported);
-        writer.Write(playerId);
+        BinaryString36.Write(writer, playerId);
         writer.Write(newX);
         writer.Write(newY);
         writer.Write((short)newScene);

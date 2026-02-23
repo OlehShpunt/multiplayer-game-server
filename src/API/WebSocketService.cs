@@ -21,7 +21,10 @@ public class WebSocketService
         if (context.WebSockets.IsWebSocketRequest)
         {
             using WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync();
-            string clientId = Guid.NewGuid().ToString();
+
+            // Force fixed-size GUID string (36 ASCII chars).
+            string clientId = Guid.NewGuid().ToString("D");
+
             _connectedClients[clientId] = webSocket;
 
             Console.WriteLine(
@@ -32,9 +35,10 @@ public class WebSocketService
             {
                 await BinaryMessageBroadcaster.BroadcastMessageToSpecificAsync(
                     [clientId],
-                    Encoding.UTF8.GetBytes(clientId),
+                    Encoding.ASCII.GetBytes(clientId),
                     _connectedClients
                 );
+
                 await ListenForClientMessagesAsync(clientId: clientId, webSocket: webSocket);
             }
             catch (Exception error)
