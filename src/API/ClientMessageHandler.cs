@@ -1,165 +1,194 @@
 using System.Collections.Concurrent;
 using System.Net.WebSockets;
+using System.Numerics;
+using System.Text;
+using System.Threading.Tasks;
+using API;
 using Application;
-using Domain;
 
 namespace API;
 
 public static class ClientMessageHandler
 {
     /// <summary>
-    /// Processes a new message received from a client.
-    /// Validates the message data and executes the corresponding use case.
+    /// Calls use cases depending on the action code that is specified in the binary message.
     /// </summary>
-    public static async Task HandleNewMessage(
+    public static async Task HandleNewBinaryMessage(
         string clientId,
-        WebSocketClientMessageDto dto,
+        byte[] buffer,
         ConcurrentDictionary<string, WebSocket> connectedClients,
         GameStateManager gameStateManager
     )
     {
+        using var ms = new MemoryStream(buffer);
+        using var reader = new BinaryReader(ms);
+
+        int action = reader.ReadInt16();
+
         Console.WriteLine(
-            "[DEBUG] ClientMessageHandler received message: "
-                + dto.ToString()
-                + " from client "
-                + clientId
+            $"[DEBUG] Binary message received | clientId={clientId} | actionCode={action} | bufferLength={buffer?.Length ?? 0}"
         );
 
-        string? dtoData = dto.Data;
-        WebSocketClientMessageDto.ActionType? dtoAction = dto.Action;
+        if (action == (int)UseCaseActionCodes.AddNewPlayerToLobby)
+        {
+            string playerName = reader.ReadString();
 
-        // Use simple if-else statements for validation
-        if (dtoAction == WebSocketClientMessageDto.ActionType.AddNewPlayerToLobby)
-        {
-            if (
-                ClientMessageDataValidator.IsValidJson<AddNewPlayerToLobbyUseCase.Params>(
-                    dtoData,
-                    out var typedData
-                )
-            )
+            Console.WriteLine(
+                $"[DEBUG] Action=AddNewPlayerToLobby | playerId={clientId} | playerName=\"{playerName}\""
+            );
+
+            var addParams = new AddNewPlayerToLobbyUseCase.Params
             {
-                bool success = new AddNewPlayerToLobbyUseCase(gameStateManager).Execute(typedData);
-                if (success)
-                {
-                    Console.WriteLine(
-                        "[INFO] Player " + typedData.PlayerId + " added to lobby successfully."
-                    );
-                }
-                else
-                {
-                    Console.WriteLine(
-                        "[WARNING] Player " + typedData.PlayerId + " already exists in lobby."
-                    );
-                }
+                PlayerId = clientId,
+                Name = playerName,
+            };
+
+            bool success = new AddNewPlayerToLobbyUseCase(gameStateManager).Execute(addParams);
+
+            Console.WriteLine(
+                $"[DEBUG] Action=AddNewPlayerToLobby | success={success} | playerId={clientId} | playerName=\"{playerName}\""
+            );
+
+            if (success)
+            {
+                await BinaryMessageBroadcaster.BroadcastMessageToAllExceptAsync(
+                    [clientId],
+                    BinaryMessageBuilder.CreatePlayerJoinedMessage(clientId, playerName),
+                    connectedClients
+                );
+                await BinaryMessageBroadcaster.BroadcastMessageToSpecificAsync(
+                    [clientId],
+                    BinaryMessageBuilder.CreateSuccessMessage("Successfully added to lobby"),
+                    connectedClients
+                );
             }
             else
             {
-                Console.WriteLine(
-                    "[WARNING] Invalid data for action AddNewPlayerToLobby from client " + clientId
+                await BinaryMessageBroadcaster.BroadcastMessageToSpecificAsync(
+                    [clientId],
+                    BinaryMessageBuilder.CreateErrorMessage("Failed to add to lobby"),
+                    connectedClients
                 );
-                return;
             }
         }
-        else if (dtoAction == WebSocketClientMessageDto.ActionType.RemovePlayerFromLobby)
+        else if (action == (int)UseCaseActionCodes.RemovePlayerFromLobby)
         {
-            if (
-                ClientMessageDataValidator.IsValidJson<RemovePlayerFromLobbyUseCase.Params>(
-                    dtoData,
-                    out var typedData
-                )
-            )
+            Console.WriteLine($"[DEBUG] Action=RemovePlayerFromLobby | playerId={clientId}");
+
+            var removeParams = new RemovePlayerFromLobbyUseCase.Params { PlayerId = clientId };
+            bool success = new RemovePlayerFromLobbyUseCase(gameStateManager).Execute(removeParams);
+
+            Console.WriteLine(
+                $"[DEBUG] Action=RemovePlayerFromLobby | success={success} | playerId={clientId}"
+            );
+
+            if (success)
             {
-                bool success = new RemovePlayerFromLobbyUseCase(gameStateManager).Execute(
-                    typedData
+                await BinaryMessageBroadcaster.BroadcastMessageToAllExceptAsync(
+                    [clientId],
+                    BinaryMessageBuilder.CreatePlayerLeftMessage(clientId),
+                    connectedClients
                 );
-                if (success)
-                {
-                    Console.WriteLine(
-                        "[INFO] Player " + typedData.PlayerId + " removed from lobby successfully."
-                    );
-                }
-                else
-                {
-                    Console.WriteLine(
-                        "[WARNING] Player " + typedData.PlayerId + " not found in lobby."
-                    );
-                }
+                await BinaryMessageBroadcaster.BroadcastMessageToSpecificAsync(
+                    [clientId],
+                    BinaryMessageBuilder.CreateSuccessMessage("Successfully removed from lobby"),
+                    connectedClients
+                );
             }
             else
             {
-                Console.WriteLine(
-                    "[WARNING] Invalid data for action RemovePlayerFromLobby from client "
-                        + clientId
+                await BinaryMessageBroadcaster.BroadcastMessageToSpecificAsync(
+                    [clientId],
+                    BinaryMessageBuilder.CreateErrorMessage("Failed to remove from lobby"),
+                    connectedClients
                 );
-                return;
             }
         }
-        else if (dtoAction == WebSocketClientMessageDto.ActionType.MovePlayer)
+        else if (action == (int)UseCaseActionCodes.TeleportPlayer)
         {
-            if (
-                ClientMessageDataValidator.IsValidJson<MovePlayerUseCase.Params>(
-                    dtoData,
-                    out var typedData
-                )
-            )
+            float x = reader.ReadSingle();
+            float y = reader.ReadSingle();
+            int sceneId = reader.ReadInt16();
+
+            Console.WriteLine(
+                $"[DEBUG] Action=TeleportPlayer | playerId={clientId} | x={x} | y={y} | sceneId={sceneId} | toScene={(Domain.Scene)sceneId}"
+            );
+
+            var teleportParams = new TeleportPlayerUseCase.Params
             {
-                bool success = new MovePlayerUseCase(gameStateManager).Execute(typedData);
-                if (success)
-                {
-                    Console.WriteLine(
-                        "[INFO] Player " + typedData.PlayerId + " moved successfully."
-                    );
-                }
-                else
-                {
-                    Console.WriteLine(
-                        "[WARNING] Failed to move player " + typedData.PlayerId + "."
-                    );
-                }
+                PlayerId = clientId,
+                NewPosition = new Vector2(x, y),
+                ToScene = (Domain.Scene)sceneId,
+            };
+
+            bool success = new TeleportPlayerUseCase(gameStateManager).Execute(teleportParams);
+
+            Console.WriteLine(
+                $"[DEBUG] Action=TeleportPlayer | success={success} | playerId={clientId} | x={x} | y={y} | sceneId={sceneId}"
+            );
+
+            if (success)
+            {
+                await BinaryMessageBroadcaster.BroadcastMessageToAllAsync(
+                    BinaryMessageBuilder.CreatePlayerTeleportedMessage(
+                        clientId,
+                        x,
+                        y,
+                        (Domain.Scene)sceneId
+                    ),
+                    connectedClients
+                );
             }
             else
             {
-                Console.WriteLine(
-                    "[WARNING] Invalid data for action MovePlayer from client " + clientId
+                await BinaryMessageBroadcaster.BroadcastMessageToSpecificAsync(
+                    [clientId],
+                    BinaryMessageBuilder.CreateErrorMessage("Failed to teleport"),
+                    connectedClients
                 );
-                return;
             }
         }
-        else if (dtoAction == WebSocketClientMessageDto.ActionType.TeleportPlayer)
+        else if (action == (int)UseCaseActionCodes.MovePlayer)
         {
-            if (
-                ClientMessageDataValidator.IsValidJson<TeleportPlayerUseCase.Params>(
-                    dtoData,
-                    out var typedData
-                )
-            )
+            float x = reader.ReadSingle();
+            float y = reader.ReadSingle();
+
+            Console.WriteLine($"[DEBUG] Action=MovePlayer | playerId={clientId} | x={x} | y={y}");
+
+            var moveParams = new MovePlayerUseCase.Params
             {
-                bool success = new TeleportPlayerUseCase(gameStateManager).Execute(typedData);
-                if (success)
-                {
-                    Console.WriteLine(
-                        "[INFO] Player " + typedData.PlayerId + " teleported successfully."
-                    );
-                }
-                else
-                {
-                    Console.WriteLine(
-                        "[WARNING] Failed to teleport player " + typedData.PlayerId + "."
-                    );
-                }
+                PlayerId = clientId,
+                NewPosition = new Vector2(x, y),
+            };
+
+            bool success = new MovePlayerUseCase(gameStateManager).Execute(moveParams);
+
+            Console.WriteLine(
+                $"[DEBUG] Action=MovePlayer | success={success} | playerId={clientId}"
+            );
+
+            if (success)
+            {
+                await BinaryMessageBroadcaster.BroadcastMessageToAllExceptAsync(
+                    [clientId],
+                    BinaryMessageBuilder.CreatePlayerMovedMessage(clientId, x, y),
+                    connectedClients
+                );
             }
             else
             {
-                Console.WriteLine(
-                    "[WARNING] Invalid data for action TeleportPlayer from client " + clientId
+                await BinaryMessageBroadcaster.BroadcastMessageToSpecificAsync(
+                    [clientId],
+                    BinaryMessageBuilder.CreateErrorMessage("Failed to move player"),
+                    connectedClients
                 );
-                return;
             }
         }
         else
         {
-            return;
-            ;
+            Console.WriteLine(
+                $"[WARN] Unknown action code | clientId={clientId} | actionCode={action}"
+            );
         }
     }
 }

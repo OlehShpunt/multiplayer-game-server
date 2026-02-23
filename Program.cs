@@ -12,7 +12,7 @@ var app = builder.Build();
 
 app.UseWebSockets();
 WebSocketService webSocketService = new WebSocketService();
-app.Map("/ws", webSocketService.HandleAsync);
+app.Map("/ws", webSocketService.HandleNewConnectionAsync);
 app.Lifetime.ApplicationStopping.Register(() =>
 {
     webSocketService.DisconnectAllClients();
