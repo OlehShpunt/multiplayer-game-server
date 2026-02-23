@@ -9,7 +9,7 @@ public static class BinaryMessageBuilder
         using var memoryStream = new MemoryStream();
         using var writer = new BinaryWriter(memoryStream);
 
-        writer.Write((ushort)BroadcastActionCodes.PlayerJoinedLobby);
+        writer.Write((short)BroadcastActionCodes.PlayerJoinedLobby);
         writer.Write(playerId);
         writer.Write(playerName);
 
@@ -21,7 +21,7 @@ public static class BinaryMessageBuilder
         using var memoryStream = new MemoryStream();
         using var writer = new BinaryWriter(memoryStream);
 
-        writer.Write((ushort)BroadcastActionCodes.PlayerLeftLobby);
+        writer.Write((short)BroadcastActionCodes.PlayerLeftLobby);
         writer.Write(playerId);
 
         return memoryStream.ToArray();
@@ -32,7 +32,7 @@ public static class BinaryMessageBuilder
         using var memoryStream = new MemoryStream();
         using var writer = new BinaryWriter(memoryStream);
 
-        writer.Write((ushort)BroadcastActionCodes.PlayerMoved);
+        writer.Write((short)BroadcastActionCodes.PlayerMoved);
         writer.Write(playerId);
         writer.Write(newX);
         writer.Write(newY);
@@ -50,11 +50,11 @@ public static class BinaryMessageBuilder
         using var memoryStream = new MemoryStream();
         using var writer = new BinaryWriter(memoryStream);
 
-        writer.Write((ushort)BroadcastActionCodes.PlayerTeleported);
+        writer.Write((short)BroadcastActionCodes.PlayerTeleported);
         writer.Write(playerId);
         writer.Write(newX);
         writer.Write(newY);
-        writer.Write((ushort)newScene);
+        writer.Write((short)newScene);
 
         return memoryStream.ToArray();
     }
@@ -64,7 +64,7 @@ public static class BinaryMessageBuilder
         using var memoryStream = new MemoryStream();
         using var writer = new BinaryWriter(memoryStream);
 
-        writer.Write((ushort)BroadcastActionCodes.Error);
+        writer.Write((short)BroadcastActionCodes.Error);
         writer.Write(errorMessage);
 
         return memoryStream.ToArray();
@@ -75,7 +75,7 @@ public static class BinaryMessageBuilder
         using var memoryStream = new MemoryStream();
         using var writer = new BinaryWriter(memoryStream);
 
-        writer.Write((ushort)BroadcastActionCodes.Success);
+        writer.Write((short)BroadcastActionCodes.Success);
         writer.Write(successMessage);
 
         return memoryStream.ToArray();
