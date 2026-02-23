@@ -2,7 +2,7 @@ namespace API;
 
 public enum BroadcastActionCodes
 {
-    Error = -1,
+    Error = 100,
     Success = 0,
     PlayerJoinedLobby = 1,
     PlayerLeftLobby = 2,
