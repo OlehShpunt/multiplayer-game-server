@@ -33,11 +33,18 @@ public class WebSocketService
 
             try
             {
-                await BinaryMessageBroadcaster.BroadcastMessageToSpecificAsync(
-                    [clientId],
-                    Encoding.ASCII.GetBytes(clientId),
-                    _connectedClients
-                );
+                using (var memoryStream = new MemoryStream())
+                using (var writer = new BinaryWriter(memoryStream))
+                {
+                    writer.Write((short)6); // Write the code "6" as Int16
+                    writer.Write(Encoding.ASCII.GetBytes(clientId)); // Write the clientId as raw ASCII bytes
+
+                    await BinaryMessageBroadcaster.BroadcastMessageToSpecificAsync(
+                        [clientId],
+                        memoryStream.ToArray(),
+                        _connectedClients
+                    );
+                }
 
                 await ListenForClientMessagesAsync(clientId: clientId, webSocket: webSocket);
             }
@@ -73,8 +80,13 @@ public class WebSocketService
                 CancellationToken.None
             );
 
+            Console.WriteLine(
+                $"[DEBUG] Received WebSocket message | clientId={clientId} | messageType={result.MessageType} | messageSize={result.Count} bytes"
+            );
+
             if (result.MessageType == WebSocketMessageType.Binary)
             {
+                Console.WriteLine($"[DEBUG] Processing binary message | clientId={clientId}");
                 await ClientMessageHandler.HandleNewBinaryMessage(
                     clientId: clientId,
                     buffer: buffer,
@@ -82,7 +94,21 @@ public class WebSocketService
                     gameStateManager: _gameStateManager
                 );
             }
+            else if (result.MessageType == WebSocketMessageType.Close)
+            {
+                Console.WriteLine($"[INFO] WebSocket close message received | clientId={clientId}");
+            }
+            else
+            {
+                Console.WriteLine(
+                    $"[WARN] Unsupported WebSocket message type | clientId={clientId} | messageType={result.MessageType}"
+                );
+            }
         } while (!result.CloseStatus.HasValue);
+
+        Console.WriteLine(
+            $"[INFO] WebSocket connection closing | clientId={clientId} | closeStatus={result.CloseStatus}"
+        );
 
         await webSocket.CloseAsync(
             result.CloseStatus.Value,
@@ -93,6 +119,8 @@ public class WebSocketService
 
     public void DisconnectAllClients()
     {
+        Console.WriteLine($"[INFO] Disconnecting all clients...");
+
         foreach (var client in _connectedClients.Values)
         {
             if (client.State == WebSocketState.Open)

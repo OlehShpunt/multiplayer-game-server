@@ -58,9 +58,31 @@ public static class ClientMessageHandler
                 );
                 await BinaryMessageBroadcaster.BroadcastMessageToSpecificAsync(
                     [clientId],
-                    BinaryMessageBuilder.CreateSuccessMessage("Successfully added to lobby"),
+                    BinaryMessageBuilder.CreateSuccessMessage(clientId),
                     connectedClients
                 );
+
+                // Send IDs of all other connected players to the new player who just connected
+                foreach (var connectedClientId in connectedClients.Keys)
+                {
+                    // Do not send the new player's id to himself again
+                    if (connectedClientId == clientId)
+                        continue;
+
+                    var connectedPlayer = gameStateManager.Players.Get(connectedClientId);
+
+                    if (connectedPlayer == null)
+                        continue;
+
+                    await BinaryMessageBroadcaster.BroadcastMessageToSpecificAsync(
+                        [clientId],
+                        BinaryMessageBuilder.CreatePlayerJoinedMessage(
+                            connectedClientId,
+                            connectedPlayer.Name
+                        ),
+                        connectedClients
+                    );
+                }
             }
             else
             {
