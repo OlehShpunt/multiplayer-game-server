@@ -128,6 +128,7 @@ public static class ClientMessageHandler
         }
         else if (action == (int)UseCaseActionCodes.TeleportPlayer)
         {
+            // X and Y don't matter, because coordinates are sent constantly
             float x = reader.ReadSingle();
             float y = reader.ReadSingle();
             int sceneId = reader.ReadInt16();
@@ -151,7 +152,8 @@ public static class ClientMessageHandler
 
             if (success)
             {
-                await BinaryMessageBroadcaster.BroadcastMessageToAllAsync(
+                await BinaryMessageBroadcaster.BroadcastMessageToAllExceptAsync(
+                    [clientId],
                     BinaryMessageBuilder.CreatePlayerTeleportedMessage(
                         clientId,
                         x,
